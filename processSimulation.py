@@ -1,5 +1,4 @@
 from random import randrange
-from time import sleep
 
 class processo:
     def __init__ (self, id:int, tempo:int, cicloCriado:int, prioridade=0):
@@ -23,11 +22,8 @@ class Escalonador:
 
     def simulacaoFIFO (self):
 
-        self.criaProcesso()
-        self.criaProcesso()
-        self.criaProcesso()
-        self.criaProcesso()
-        self.criaProcesso()
+        for i in range (5)
+            self.criaProcesso()
 
         processoAtual = processo (0, -1)
 
