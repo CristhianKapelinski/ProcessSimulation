@@ -50,7 +50,7 @@ class Processo:
         self.prioridade = prioridade
         
     def __str__ (self):
-        return f"ID: {self.id}, Tempo necessario para finalizar: {self.tempo}, Estado: {self.estado}, Prioridade: {self.prioridade}, Ciclo de Criacao: {self.cicloCriado}"
+        return f"ID: {self.id}, Ciclos totais necessarios: {self.tempo}, Estado: {self.estado}, Prioridade: {self.prioridade}, Ciclo de Criacao: {self.cicloCriado}"
 
     def alterar_estado(self, novo_estado : str):
         self.estado = novo_estado
@@ -104,6 +104,10 @@ class Escalonador:
         for processo in self.listaProcessos:
             print(processo)
 
+    def atualizar_prioridades(self):
+        for processo in self.listaProcessos:
+            processo.prioridade += 1
+
     def simulacaoFIFO (self):
         print("\nSimulacao FIFO\n")
         for _ in range(3):
@@ -115,7 +119,7 @@ class Escalonador:
         print(f"\nProcesso atual: {processoAtual}\n")
         self.listaProcessos.pop(0)
         self.exibir_fila_processos()
-
+        contador : int = 0
 
         while (1):
             try:
@@ -125,17 +129,19 @@ class Escalonador:
                     self.criaProcesso()
                     print (f"Processos na fila: {len(self.listaProcessos)}")
                 
-                if (processoAtual.tempo <= 0 and self.listaProcessos != []):
+                if (processoAtual.tempo == contador and self.listaProcessos != []):
                     processoAtual.alterar_estado('finalizado')
                     print (f"Processo finalizado: {processoAtual}")
                     processoAtual = self.listaProcessos[0]
                     self.listaProcessos.pop(0)
+                    contador = 0
                     processoAtual.alterar_estado('executando')
                     print (f"Processo atual atualizado: {processoAtual}")
                     self.exibir_fila_processos()            
                 else :
-                    print (f"Processo atual: {processoAtual}")
-                processoAtual.tempo -= 1
+                    print (f"Processo atual: {processoAtual} - Ciclos restantes para finalizar: {processoAtual.tempo - contador}")
+                
+                contador += 1
                 self.ciclo += 1
 
             except(EOFError):
@@ -154,7 +160,7 @@ class Escalonador:
         print(f"\nProcesso atual: {processoAtual}\n")
         self.listaProcessos.pop(0)
         self.exibir_fila_processos()
-        
+        contador : int = 0
         while (1):
             try:
                 input()
@@ -164,18 +170,20 @@ class Escalonador:
                     self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
                     print (f"Processos na fila: {len(self.listaProcessos)}")
                 
-                if (processoAtual.tempo <= 0 and self.listaProcessos != []):
+                if (processoAtual.tempo == contador and self.listaProcessos != []):
                     processoAtual.alterar_estado('finalizado')
                     print (f"Processo finalizado: {processoAtual}")
                     processoAtual = self.listaProcessos[0]
+                    contador = 0
                     self.listaProcessos.pop(0)
+                    self.atualizar_prioridades()
                     processoAtual.alterar_estado('executando')
                     print (f"Processo atual atualizado: {processoAtual}")
                     self.exibir_fila_processos()
                 else :
-                    print (f"Processo atual: {processoAtual}")
+                    print (f"Processo atual: {processoAtual} - Ciclos restantes para finalizar: {processoAtual.tempo - contador}")
                 
-                processoAtual.tempo -= 1
+                contador += 1
                 self.ciclo += 1
 
             except(EOFError):
@@ -184,4 +192,5 @@ class Escalonador:
 
 escalonador = Escalonador ()
 escalonador.simulacaoFIFO()
-escalonador.simulacaoPrioridade()
+escalonador2 = Escalonador()
+escalonador2.simulacaoPrioridade()
