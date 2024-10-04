@@ -50,7 +50,7 @@ class Processo:
         self.prioridade = prioridade
         
     def __str__ (self):
-        return f"ID: {self.id}, Tempo para finalizar: {self.tempo}, Estado: {self.estado}, Prioridade: {self.prioridade}, Ciclo de Criacao: {self.cicloCriado}"
+        return f"ID: {self.id}, Tempo necessario para finalizar: {self.tempo}, Estado: {self.estado}, Prioridade: {self.prioridade}, Ciclo de Criacao: {self.cicloCriado}"
 
     def alterar_estado(self, novo_estado : str):
         self.estado = novo_estado
