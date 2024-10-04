@@ -107,7 +107,7 @@ class Escalonador:
     def simulacaoFIFO (self):
         print("\nSimulacao FIFO\n")
         for _ in range(3):
-            self.ciclo += randrange(1, 5)
+            # self.ciclo += randrange(1, 5)
             self.criaProcesso()
 
         processoAtual = self.listaProcessos[0]
@@ -145,7 +145,7 @@ class Escalonador:
     def simulacaoPrioridade(self):
         print("\nSimulacao Prioridade\n")
         for _ in range(3):
-            self.ciclo += randrange(1, 5)
+            # self.ciclo += randrange(1, 5)
             self.criaProcesso()
 
         self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
