@@ -85,9 +85,19 @@ class Escalonador:
         Cria um novo processo com tempo aleatório e o adiciona à lista de processos.
         """
         self.idGeral += 1
-        processoNovo = Processo (self.idGeral, randrange(1, 10), self.ciclo)
+        processoNovo = Processo (self.idGeral, randrange(1, 10), self.ciclo, randrange(1, 10))
         self.listaProcessos.append (processoNovo)
         print (f"Processo criado: {processoNovo}")
+    
+    # def criaProcessoPrioridade (self):
+    #     """
+    #     Cria um novo processo com tempo aleatório e uma prioridade e o adiciona à lista de processos.
+    #     """
+    #     self.idGeral += 1
+    #     processoNovo = Processo(self.idGeral, randrange(1, 10), self.ciclo, randrange(1, 10))
+    #     self.listaProcessos.append(processoNovo)
+    #     self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
+    #     print (f"Processo criado: {processoNovo}")
 
     def exibir_fila_processos(self):
         print("Fila de processos:")
@@ -95,7 +105,7 @@ class Escalonador:
             print(processo)
 
     def simulacaoFIFO (self):
-
+        print("\nSimulacao FIFO\n")
         for _ in range(3):
             self.ciclo += randrange(1, 5)
             self.criaProcesso()
@@ -131,6 +141,47 @@ class Escalonador:
             except(EOFError):
                 print("Fim da simulacao")
                 break
+    
+    def simulacaoPrioridade(self):
+        print("\nSimulacao Prioridade\n")
+        for _ in range(3):
+            self.ciclo += randrange(1, 5)
+            self.criaProcesso()
+
+        self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
+        processoAtual = self.listaProcessos[0]
+        processoAtual.alterar_estado('executando')
+        print(f"\nProcesso atual: {processoAtual}\n")
+        self.listaProcessos.pop(0)
+        self.exibir_fila_processos()
+        
+        while (1):
+            try:
+                input()
+                print (f"Ciclo: {self.ciclo}")
+                if (randrange(0,20)) < 5:
+                    self.criaProcesso()
+                    self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
+                    print (f"Processos na fila: {len(self.listaProcessos)}")
+                
+                if (processoAtual.tempo <= 0 and self.listaProcessos != []):
+                    processoAtual.alterar_estado('finalizado')
+                    print (f"Processo finalizado: {processoAtual}")
+                    processoAtual = self.listaProcessos[0]
+                    self.listaProcessos.pop(0)
+                    processoAtual.alterar_estado('executando')
+                    print (f"Processo atual atualizado: {processoAtual}")
+                    self.exibir_fila_processos()
+                else :
+                    print (f"Processo atual: {processoAtual}")
+                
+                processoAtual.tempo -= 1
+                self.ciclo += 1
+
+            except(EOFError):
+                print("Fim da simulacao")
+                break
 
 escalonador = Escalonador ()
 escalonador.simulacaoFIFO()
+escalonador.simulacaoPrioridade()
