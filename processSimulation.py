@@ -32,6 +32,9 @@
 # práticas de programação.
 # ○ A simulação deve ser clara e fácil de entender.
 from random import randrange
+
+PROCESSOS_TOTAIS = 7
+PROCESSOS_INICIAIS = 5
 class Processo:
     """
     Classe que representa um processo em uma simulação de SO.
@@ -88,16 +91,6 @@ class Escalonador:
         processoNovo = Processo (self.idGeral, randrange(1, 10), self.ciclo, randrange(1, 10))
         self.listaProcessos.append (processoNovo)
         print (f"Processo criado: {processoNovo}")
-    
-    # def criaProcessoPrioridade (self):
-    #     """
-    #     Cria um novo processo com tempo aleatório e uma prioridade e o adiciona à lista de processos.
-    #     """
-    #     self.idGeral += 1
-    #     processoNovo = Processo(self.idGeral, randrange(1, 10), self.ciclo, randrange(1, 10))
-    #     self.listaProcessos.append(processoNovo)
-    #     self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
-    #     print (f"Processo criado: {processoNovo}")
 
     def exibir_fila_processos(self):
         print("Fila de processos:")
@@ -108,12 +101,18 @@ class Escalonador:
         for processo in self.listaProcessos:
             processo.prioridade += 1
 
+    def trocaContexto(self, processo : Processo, contador : int):
+        processo.alterar_estado('pronto')
+        processo.tempo -= contador
+        self.listaProcessos.append(processo)
+        print(f"Troca de contexto: {processo}")
+
     def simulacaoFIFO (self):
         print("\nSimulacao FIFO\n")
         for _ in range(3):
-            # self.ciclo += randrange(1, 5)
             self.criaProcesso()
 
+        processosTotais = 3
         processoAtual = self.listaProcessos[0]
         processoAtual.alterar_estado('executando')
         print(f"\nProcesso atual: {processoAtual}\n")
@@ -121,15 +120,14 @@ class Escalonador:
         self.exibir_fila_processos()
         contador : int = 0
 
-        while (1):
+        while (1): 
             try:
                 input()
                 print (f"Ciclo: {self.ciclo}")
-                if (randrange(0,20)) < 5:
-                    self.criaProcesso()
-                    print (f"Processos na fila: {len(self.listaProcessos)}")
-                
-                if (processoAtual.tempo == contador and self.listaProcessos != []):
+                if (processoAtual.tempo == contador):
+                    if(self.listaProcessos == []):
+                        print("Fim da simulacao")
+                        break
                     processoAtual.alterar_estado('finalizado')
                     print (f"Processo finalizado: {processoAtual}")
                     processoAtual = self.listaProcessos[0]
@@ -140,6 +138,11 @@ class Escalonador:
                     self.exibir_fila_processos()            
                 else :
                     print (f"Processo atual: {processoAtual} - Ciclos restantes para finalizar: {processoAtual.tempo - contador}")
+
+                if (randrange(0,20)) < 5 and processosTotais < 8:
+                    self.criaProcesso()
+                    processosTotais += 1
+                    print (f"Processos na fila: {len(self.listaProcessos)}")
                 
                 contador += 1
                 self.ciclo += 1
@@ -147,13 +150,13 @@ class Escalonador:
             except(EOFError):
                 print("Fim da simulacao")
                 break
-    
+
     def simulacaoPrioridade(self):
         print("\nSimulacao Prioridade\n")
         for _ in range(3):
-            # self.ciclo += randrange(1, 5)
             self.criaProcesso()
 
+        processosTotais = 3
         self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
         processoAtual = self.listaProcessos[0]
         processoAtual.alterar_estado('executando')
@@ -165,24 +168,37 @@ class Escalonador:
             try:
                 input()
                 print (f"Ciclo: {self.ciclo}")
-                if (randrange(0,20)) < 5:
-                    self.criaProcesso()
-                    self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
-                    print (f"Processos na fila: {len(self.listaProcessos)}")
                 
-                if (processoAtual.tempo == contador and self.listaProcessos != []):
+                if (processoAtual.tempo == contador):
                     processoAtual.alterar_estado('finalizado')
                     print (f"Processo finalizado: {processoAtual}")
+                    if(self.listaProcessos == []):
+                        print("Fim da simulacao")
+                        break
+                    self.atualizar_prioridades()
                     processoAtual = self.listaProcessos[0]
                     contador = 0
                     self.listaProcessos.pop(0)
-                    self.atualizar_prioridades()
-                    processoAtual.alterar_estado('executando')
+                    processoAtual.alterar_estado('executando')  
                     print (f"Processo atual atualizado: {processoAtual}")
                     self.exibir_fila_processos()
                 else :
                     print (f"Processo atual: {processoAtual} - Ciclos restantes para finalizar: {processoAtual.tempo - contador}")
-                
+
+                if (randrange(0,10)) < 5 and processosTotais < 8:
+                    self.criaProcesso()
+                    processosTotais += 1
+                    self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
+                    if(self.listaProcessos[0].prioridade > processoAtual.prioridade):
+                        self.trocaContexto(processoAtual, contador)
+                        self.listaProcessos.sort(key=lambda x: x.prioridade, reverse=True)
+                        processoAtual = self.listaProcessos[0]
+                        self.listaProcessos.pop(0)
+                        contador = 0
+                        processoAtual.alterar_estado('executando')
+                        print(f"Processo atual atualizado: {processoAtual}")
+                    print (f"Processos na fila: {len(self.listaProcessos)}")
+
                 contador += 1
                 self.ciclo += 1
 
@@ -190,7 +206,121 @@ class Escalonador:
                 print("Fim da simulacao")
                 break
 
-escalonador = Escalonador ()
-escalonador.simulacaoFIFO()
-escalonador2 = Escalonador()
-escalonador2.simulacaoPrioridade()
+    def simulacaoSJF(self):
+        print("\nSimulacao SJF\n")
+        for _ in range(3):
+            self.criaProcesso()
+
+        processosTotais = 3
+        self.listaProcessos.sort(key=lambda x: x.tempo)
+        processoAtual = self.listaProcessos[0]
+        processoAtual.alterar_estado('executando')
+        print(f"\nProcesso atual: {processoAtual}\n")
+        self.listaProcessos.pop(0)
+        self.exibir_fila_processos()
+        contador : int = 0
+        while (1):
+            try:
+                input()
+                print (f"Ciclo: {self.ciclo}")
+                
+                if (processoAtual.tempo == contador):
+                    processoAtual.alterar_estado('finalizado')
+                    print (f"Processo finalizado: {processoAtual}")
+                    if(self.listaProcessos == []):
+                        print("Fim da simulacao")
+                        break
+                    processoAtual = self.listaProcessos[0]
+                    contador = 0
+                    self.listaProcessos.pop(0)
+                    self.listaProcessos.sort(key=lambda x: x.tempo)
+                    processoAtual.alterar_estado('executando')
+                    print (f"Processo atual atualizado: {processoAtual}")
+                    self.exibir_fila_processos()
+                else :
+                    print (f"Processo atual: {processoAtual} - Ciclos restantes para finalizar: {processoAtual.tempo - contador}")
+
+                if (randrange(0,10)) < 5 and processosTotais < 8:
+                    self.criaProcesso()
+                    processosTotais += 1
+                    self.listaProcessos.sort(key=lambda x: x.tempo)
+                    if(self.listaProcessos[0].tempo < (processoAtual.tempo - contador)):
+                        self.trocaContexto(processoAtual, contador)
+                        self.listaProcessos.sort(key=lambda x: x.tempo)
+                        processoAtual = self.listaProcessos[0]
+                        self.listaProcessos.pop(0)
+                        contador = 0
+                        processoAtual.alterar_estado('executando')
+                        print(f"Processo atual atualizado: {processoAtual}")
+                    print (f"Processos na fila: {len(self.listaProcessos)}")
+
+                contador += 1
+                self.ciclo += 1
+
+            except(EOFError):
+                print("Fim da simulacao")
+                break
+    
+    def simulacaoRoundRobin(self):
+        print("\nSimulacao Round Robin\n")
+        for _ in range(3):
+            self.criaProcesso()
+        
+        processosTotais = 3
+        processoAtual = self.listaProcessos[0]
+        processoAtual.alterar_estado('executando')
+        print(f"\nProcesso atual: {processoAtual}\n")
+        self.listaProcessos.pop(0)
+        self.exibir_fila_processos()
+        contador : int = 0
+        quantidadeCiclos = 3
+        while(1):
+            try:
+                input()
+                print (f"Ciclo: {self.ciclo}")
+                if(processoAtual.tempo == contador):
+                    if(self.listaProcessos == []):
+                        print("Fim da simulacao")
+                        break
+                    processoAtual.alterar_estado('finalizado')
+                    print(f"Processo finalizado: {processoAtual}")
+                    processoAtual = self.listaProcessos[0]
+                    contador = 0
+                    self.listaProcessos.pop(0)
+                    processoAtual.alterar_estado('executando')
+                    print(f"Processo atual atualizado: {processoAtual}")
+                    self.exibir_fila_processos()
+                else:
+                    print(f"Processo atual: {processoAtual} - Ciclos restantes para finalizar: {processoAtual.tempo - contador}")
+                
+                if(quantidadeCiclos == 0):
+                    self.trocaContexto(processoAtual, contador)
+                    processoAtual = self.listaProcessos[0]
+                    self.listaProcessos.pop(0)
+                    contador = 0
+                    processoAtual.alterar_estado('executando')
+                    print(f"Processo atual atualizado: {processoAtual}")
+                    quantidadeCiclos = 3
+
+                if(randrange(0,10)) < 5 and processosTotais < 8:
+                    self.criaProcesso()
+                    processosTotais += 1
+                    print(f"Processos na fila: {len(self.listaProcessos)}")
+
+
+                contador += 1
+                self.ciclo += 1
+                quantidadeCiclos -= 1
+            except(EOFError):
+                print("Fim da simulacao")
+                break
+
+escalonadorFIFO = Escalonador ()
+escalonadorFIFO.simulacaoFIFO()
+escalonadorPrioridade = Escalonador()
+escalonadorPrioridade.simulacaoPrioridade()
+escalonadorSJF = Escalonador()
+escalonadorSJF.simulacaoSJF()
+escalonadorRoundRobin = Escalonador()
+escalonadorRoundRobin.simulacaoRoundRobin()
+
