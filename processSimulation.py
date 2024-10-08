@@ -303,6 +303,7 @@ class Escalonador:
                 console.print(f"[cyan]Ciclo:[/cyan] {self.ciclo}")
                 if processoAtual.tempo == contador:
                     processoAtual.alterar_estado('finalizado')
+                    quantidadeCiclos = 3
                     processoAtual.turnaround = self.ciclo - processoAtual.cicloCriado
                     processoAtual.tempoEspera = processoAtual.turnaround - processoAtual.tempoTotal
                     self.processosFinalizados.append(processoAtual)
