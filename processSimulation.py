@@ -281,6 +281,66 @@ class Escalonador:
                 console.print(Panel("[bold red]Fim da simulação[/bold red]"))
                 break
 
+    def simulacaoSJFEnvelhecimento(self):
+        seed(RANDOM_SEED)
+        console.print(Panel("[cyan]Simulação SJF com Envelhecimento[/cyan]\n"))
+        for _ in range(PROCESSOS_INICIAIS):
+            self.criaProcesso()
+        processosTotais = PROCESSOS_INICIAIS
+        self.listaProcessos.sort(key=lambda x: x.tempo)
+        processoAtual = self.listaProcessos[0]
+        processoAtual.alterar_estado('executando')
+        console.print(Panel(f"[blue]Processo atual:[/blue] ID {processoAtual.id} com {processoAtual.tempo} ciclos restantes"))
+        self.listaProcessos.pop(0)
+        self.exibir_fila_processos()
+        contador: int = 0
+        envelhecimento: int = 1 
+
+        while True:
+            try:
+                input()
+                console.print(f"\n[Ciclo: {self.ciclo}]\n")
+                if processoAtual.tempo == contador:
+                    processoAtual.alterar_estado('finalizado')
+                    processoAtual.turnaround = self.ciclo - processoAtual.cicloCriado
+                    processoAtual.tempoEspera = processoAtual.turnaround - processoAtual.tempoTotal
+                    for processo in self.listaProcessos:
+                        processo.tempoEspera += envelhecimento
+                    self.listaProcessos.sort(key=lambda x: (x.tempo - (x.tempoEspera)))
+                    self.processosFinalizados.append(processoAtual)
+                    console.print(Panel(f"[red]Processo finalizado: ID {processoAtual.id}[/red]"))
+                    if not self.listaProcessos:
+                        console.print(Panel("[bold red]Fim da simulação[/bold red]"))
+                        self.exibir_processos_finalizados()
+                        break
+                    processoAtual = self.listaProcessos[0]
+                    contador = 0
+                    self.listaProcessos.pop(0)
+                    processoAtual.alterar_estado('executando')
+                    console.print(Panel(f"[blue]Processo atual atualizado:[/blue] ID {processoAtual.id} com {processoAtual.tempo} ciclos restantes"))
+                    self.exibir_fila_processos()
+                else:
+                    console.print(f"[yellow]Processo atual:[/yellow] ID {processoAtual.id} - Ciclos restantes para finalizar: {processoAtual.tempo - contador}")
+                if randrange(0, 10) < 5 and processosTotais < PROCESSOS_TOTAIS:
+                    self.criaProcesso()
+                    processosTotais += 1
+                    self.listaProcessos.sort(key=lambda x: (x.tempo - x.tempoEspera))
+                    if self.listaProcessos[0].tempo < (processoAtual.tempo - contador):
+                        self.trocaContexto(processoAtual, contador)
+                        processoAtual = self.listaProcessos[0]
+                        self.listaProcessos.pop(0)
+                        contador = 0
+                        processoAtual.alterar_estado('executando')
+                        console.print(Panel(f"[blue]Processo atual atualizado:[/blue] ID {processoAtual.id} com {processoAtual.tempo} ciclos restantes"))
+                    console.print(f"[green]Processos na fila: {len(self.listaProcessos)}")
+
+                contador += 1
+                self.ciclo += 1
+
+            except EOFError:
+                console.print(Panel("[bold red]Fim da simulação[/bold red]"))
+                break
+
     
     def simulacaoRoundRobin(self):
         seed(RANDOM_SEED)
